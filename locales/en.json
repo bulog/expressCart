@@ -2,6 +2,7 @@
 	"Languages": "Languages",
 	"en": "English",
 	"it": "Italiano",
+	"cn": "Chinese",
 	"Cart": "Cart",
 	"Name": "Name",
 	"New": "New",
@@ -10,6 +11,7 @@
 	"Address 1": "Address 1",
 	"Address 2": "Address 2",
 	"Country": "Country",
+	"City": "City",
 	"State": "State",
 	"Postcode": "Postcode",
 	"Phone number": "Phone number",
@@ -218,5 +220,15 @@
 	"Product Order": "Product Order",
 	"Descending": "Descending",
 	"Ascending": "Ascending",
-	"Select the order in which the products should be sorted.": "Select the order in which the products should be sorted."
+	"Select the order in which the products should be sorted.": "Select the order in which the products should be sorted.",
+	"Recent reviews": "Recent reviews",
+	"Reviews can be filtered by: review title or review description keywords": "Reviews can be filtered by: review title or review description keywords",
+	"Reviews": "Reviews",
+	"Product GTIN": "Product GTIN",
+	"The Serial number, GTIN or Barcode": "The Serial number, GTIN or Barcode",
+	"Product Brand": "Product Brand",
+	"The brand of the product": "The brand of the product",
+	"Checkout": "Checkout",
+	"Return to cart": "Return to cart",
+	"Continue to shipping": "Continue to shipping"
 }

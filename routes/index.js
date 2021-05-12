@@ -3,24 +3,51 @@ const router = express.Router();
 const colors = require('colors');
 const stripHtml = require('string-strip-html');
 const moment = require('moment');
+const fs = require('fs');
+const path = require('path');
 const _ = require('lodash');
+const ObjectId = require('mongodb').ObjectID;
 const {
     getId,
     hooker,
     clearSessionValue,
-    sortMenu,
-    getMenu,
-    getPaymentConfig,
     getImages,
-    updateTotalCart,
-    emptyCart,
-    updateSubscriptionCheck,
-    paginateProducts,
-    getSort,
     addSitemapProducts,
     getCountryList
 } = require('../lib/common');
+const {
+    getSort,
+    paginateProducts
+} = require('../lib/paginate');
+const {
+    getPaymentConfig
+} = require('../lib/config');
+const {
+    updateTotalCart,
+    emptyCart,
+    updateSubscriptionCheck
+} = require('../lib/cart');
+const {
+    createReview,
+    getRatingHtml
+} = require('../lib/modules/reviews-basic');
+const {
+    sortMenu,
+    getMenu
+} = require('../lib/menu');
 const countryList = getCountryList();
+
+// Google products
+router.get('/googleproducts.xml', async (req, res, next) => {
+    let productsFile = '';
+    try{
+        productsFile = fs.readFileSync(path.join('bin', 'googleproducts.xml'));
+    }catch(ex){
+        console.log('Google products file not found');
+    }
+    res.type('text/plain');
+    res.send(productsFile);
+});
 
 // These is the customer facing routes
 router.get('/payment/:orderId', async (req, res, next) => {
@@ -96,10 +123,18 @@ router.get('/payment/:orderId', async (req, res, next) => {
         }
     }
 
-    // If hooks are configured, send hook
-    if(config.orderHook){
+    // If hooks are configured and the hook has not already been sent, send hook
+    if(config.orderHook && !order.hookSent){
         await hooker(order);
+        await db.orders.updateOne({
+            _id: getId(order._id)
+        }, {
+            $set: {
+                hookSent: true
+            }
+        }, { multi: false });
     };
+
     let paymentView = `${config.themeViews}payment-complete`;
     if(order.orderPaymentGateway === 'Blockonomics') paymentView = `${config.themeViews}payment-complete-blockonomics`;
     res.render(paymentView, {
@@ -263,8 +298,8 @@ router.get('/blockonomics_payment', (req, res, next) => {
     if(req.session.cartSubscription){
         paymentType = '_subscription';
     }
-// show bitcoin address and wait for payment, subscribing to wss
 
+    // show bitcoin address and wait for payment, subscribing to wss
     res.render(`${config.themeViews}checkout-blockonomics`, {
         title: 'Checkout - Payment',
         config: req.app.config,
@@ -380,6 +415,51 @@ router.get('/product/:id', async (req, res) => {
     // Get variants for this product
     const variants = await db.variants.find({ product: product._id }).sort({ added: 1 }).toArray();
 
+    // Grab review data
+    const reviews = {
+        reviews: [],
+        average: 0,
+        count: 0,
+        featured: {},
+        ratingHtml: '',
+        highestRating: 0
+    };
+    if(config.modules.enabled.reviews){
+        reviews.reviews = await db.reviews.find({ product: product._id }).sort({ date: 1 }).limit(5).toArray();
+        // only aggregate if reviews are found
+        if(reviews.reviews.length > 0){
+            reviews.highestRating = await db.reviews.find({ product: product._id }).sort({ rating: -1 }).limit(1).toArray();
+            if(reviews.highestRating.length > 0){
+                reviews.highestRating = reviews.highestRating[0].rating;
+            }
+            const featuredReview = await db.reviews.find({ product: product._id }).sort({ date: -1 }).limit(1).toArray();
+            if(featuredReview.length > 0){
+                reviews.featured.review = featuredReview[0];
+                reviews.featured.customer = await db.customers.findOne({ _id: reviews.featured.review.customer });
+            }
+            const reviewRating = await db.reviews.aggregate([
+                {
+                    $match: {
+                        product: ObjectId(product._id)
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$item',
+                        avgRating: { $avg: '$rating' }
+                    }
+                }
+            ]).toArray();
+            reviews.count = await db.reviews.countDocuments({ product: product._id });
+            // Assign if returned
+            if(reviewRating.length > 0 && reviewRating[0].avgRating){
+                reviews.average = reviewRating[0].avgRating;
+            }
+        }
+        // Set review html
+        reviews.ratingHtml = getRatingHtml(Math.round(reviews.average));
+    }
+
     // If JSON query param return json instead
     if(req.query.json === 'true'){
         res.status(200).json(product);
@@ -397,9 +477,14 @@ router.get('/product/:id', async (req, res) => {
         const productTitleWords = product.productTitle.split(' ');
         const searchWords = productTags.concat(productTitleWords);
         searchWords.forEach((word) => {
-            productsIndex.search(word).forEach((id) => {
-                lunrIdArray.push(getId(id.ref));
-            });
+            try{
+                const results = productsIndex.search(word);
+                results.forEach((id) => {
+                    lunrIdArray.push(getId(id.ref));
+                });
+            }catch(e){
+                console.log('lunr search query error');
+            }
         });
         relatedProducts = await db.products.find({
             _id: { $in: lunrIdArray, $ne: product._id }
@@ -410,10 +495,11 @@ router.get('/product/:id', async (req, res) => {
         title: product.productTitle,
         result: product,
         variants,
+        reviews,
         images: images,
         relatedProducts,
         productDescription: stripHtml(product.productDescription),
-        metaDescription: config.cartTitle + ' - ' + product.productTitle,
+        metaDescription: `${config.cartTitle} - ${product.productTitle}`,
         config: config,
         session: req.session,
         pageUrl: config.baseUrl + req.originalUrl,
@@ -745,6 +831,92 @@ router.post('/product/addtocart', async (req, res, next) => {
     });
 });
 
+// Totally empty the cart
+router.post('/product/addreview', async (req, res, next) => {
+    const config = req.app.config;
+
+    // Check if module enabled
+    if(config.modules.enabled.reviews){
+        // Check if a customer is logged in
+        if(!req.session.customerPresent){
+            return res.status(400).json({
+                message: 'You need to be logged in to create a review'
+            });
+        }
+
+        // Validate inputs
+        if(!req.body.title){
+            return res.status(400).json({
+                message: 'Please supply a review title'
+            });
+        }
+        if(!req.body.description){
+            return res.status(400).json({
+                message: 'Please supply a review description'
+            });
+        }
+        if(!req.body.rating){
+            return res.status(400).json({
+                message: 'Please supply a review rating'
+            });
+        }
+
+        // Sanitize inputs
+        req.body.title = stripHtml(req.body.title);
+        req.body.description = stripHtml(req.body.description);
+
+        // Validate length
+        if(req.body.title.length > 50){
+            return res.status(400).json({
+                message: 'Review title is too long'
+            });
+        }
+        if(req.body.description.length > 200){
+            return res.status(400).json({
+                message: 'Review description is too long'
+            });
+        }
+
+        // Check rating is within range
+        try{
+            const rating = parseInt(req.body.rating);
+            if(rating < 0 || rating > 5){
+                return res.status(400).json({
+                    message: 'Please supply a valid rating'
+                });
+            }
+
+            // Check for failed Int conversion
+            if(isNaN(rating)){
+                return res.status(400).json({
+                    message: 'Please supply a valid rating'
+                });
+            }
+
+            // Set rating to be numeric
+            req.body.rating = rating;
+        }catch(ex){
+            return res.status(400).json({
+                message: 'Please supply a valid rating'
+            });
+        }
+
+        // Checks passed, create the review
+        const response = await createReview(req);
+        if(response.error){
+            return res.status(400).json({
+                message: response.error
+            });
+        }
+        return res.json({
+            message: 'Review successfully submitted'
+        });
+    }
+    return res.status(400).json({
+        message: 'Unable to submit review'
+    });
+});
+
 // search products
 router.get('/search/:searchTerm/:pageNum?', (req, res) => {
     const db = req.app.db;
@@ -779,7 +951,7 @@ router.get('/search/:searchTerm/:pageNum?', (req, res) => {
             results: results.data,
             filtered: true,
             session: req.session,
-            metaDescription: req.app.config.cartTitle + ' - Search term: ' + searchTerm,
+            metaDescription: `${req.app.config.cartTitle} - Search term: ${searchTerm}`,
             searchTerm: searchTerm,
             message: clearSessionValue(req.session, 'message'),
             messageType: clearSessionValue(req.session, 'messageType'),
@@ -915,7 +1087,7 @@ router.get('/page/:pageNum', (req, res, next) => {
                 session: req.session,
                 message: clearSessionValue(req.session, 'message'),
                 messageType: clearSessionValue(req.session, 'messageType'),
-                metaDescription: req.app.config.cartTitle + ' - Products page: ' + req.params.pageNum,
+                metaDescription: `${req.app.config.cartTitle} - Products page: ${req.params.pageNum}`,
                 config: req.app.config,
                 productsPerPage: numberProducts,
                 totalProductCount: results.totalItems,
@@ -987,7 +1159,7 @@ router.get('/:page?', async (req, res, next) => {
                 message: clearSessionValue(req.session, 'message'),
                 messageType: clearSessionValue(req.session, 'messageType'),
                 config: req.app.config,
-                metaDescription: req.app.config.cartTitle + ' - ' + page,
+                metaDescription: `${req.app.config.cartTitle} - ${page}`,
                 helpers: req.handlebars.helpers,
                 showFooter: 'showFooter',
                 menu: sortMenu(await getMenu(db))

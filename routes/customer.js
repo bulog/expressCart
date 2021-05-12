@@ -33,6 +33,7 @@ router.post('/customer/create', async (req, res) => {
         address1: req.body.address1,
         address2: req.body.address2,
         country: req.body.country,
+        city: req.body.city,
         state: req.body.state,
         postcode: req.body.postcode,
         phone: req.body.phone,
@@ -73,6 +74,7 @@ router.post('/customer/create', async (req, res) => {
             req.session.customerAddress1 = customerReturn.address1;
             req.session.customerAddress2 = customerReturn.address2;
             req.session.customerCountry = customerReturn.country;
+            req.session.customerCity = customerReturn.city;
             req.session.customerState = customerReturn.state;
             req.session.customerPostcode = customerReturn.postcode;
             req.session.customerPhone = customerReturn.phone;
@@ -98,6 +100,7 @@ router.post('/customer/save', async (req, res) => {
         address1: req.body.address1,
         address2: req.body.address2,
         country: req.body.country,
+        city: req.body.city,
         state: req.body.state,
         postcode: req.body.postcode,
         phone: req.body.phone
@@ -118,6 +121,7 @@ router.post('/customer/save', async (req, res) => {
     req.session.customerAddress1 = customerObj.address1;
     req.session.customerAddress2 = customerObj.address2;
     req.session.customerCountry = customerObj.country;
+    req.session.customerCity = customerObj.city;
     req.session.customerState = customerObj.state;
     req.session.customerPostcode = customerObj.postcode;
     req.session.customerPhone = customerObj.phone;
@@ -170,6 +174,7 @@ router.post('/customer/update', async (req, res) => {
         address1: req.body.address1,
         address2: req.body.address2,
         country: req.body.country,
+        city: req.body.city,
         state: req.body.state,
         postcode: req.body.postcode,
         phone: req.body.phone
@@ -208,6 +213,7 @@ router.post('/customer/update', async (req, res) => {
             req.session.customerAddress1 = customerObj.address1;
             req.session.customerAddress2 = customerObj.address2;
             req.session.customerCountry = customerObj.country;
+            req.session.customerCity = customerObj.city;
             req.session.customerState = customerObj.state;
             req.session.customerPostcode = customerObj.postcode;
             req.session.customerPhone = customerObj.phone;
@@ -216,7 +222,7 @@ router.post('/customer/update', async (req, res) => {
             res.status(200).json({ message: 'Customer updated', customer: updatedCustomer.value });
         });
     }catch(ex){
-        console.error(colors.red('Failed updating customer: ' + ex));
+        console.error(colors.red(`Failed updating customer: ${ex}`));
         res.status(400).json({ message: 'Failed to update customer' });
     }
 });
@@ -233,6 +239,7 @@ router.post('/admin/customer/update', restrict, async (req, res) => {
         address1: req.body.address1,
         address2: req.body.address2,
         country: req.body.country,
+        city: req.body.city,
         state: req.body.state,
         postcode: req.body.postcode,
         phone: req.body.phone
@@ -271,7 +278,7 @@ router.post('/admin/customer/update', restrict, async (req, res) => {
             res.status(200).json({ message: 'Customer updated', customer: updatedCustomer.value });
         });
     }catch(ex){
-        console.error(colors.red('Failed updating customer: ' + ex));
+        console.error(colors.red(`Failed updating customer: ${ex}`));
         res.status(400).json({ message: 'Failed to update customer' });
     }
 });
@@ -296,7 +303,7 @@ router.delete('/admin/customer', restrict, async (req, res) => {
             res.status(200).json({ message: 'Customer deleted' });
         });
     }catch(ex){
-        console.error(colors.red('Failed deleting customer: ' + ex));
+        console.error(colors.red(`Failed deleting customer: ${ex}`));
         res.status(400).json({ message: 'Failed to delete customer' });
     }
 });
@@ -409,6 +416,7 @@ router.post('/admin/customer/lookup', restrict, async (req, res, next) => {
         req.session.customerLastname = customer.lastName;
         req.session.customerAddress1 = customer.address1;
         req.session.customerAddress2 = customer.address2;
+        req.session.customerCity = customer.city;
         req.session.customerCountry = customer.country;
         req.session.customerState = customer.state;
         req.session.customerPostcode = customer.postcode;
@@ -470,6 +478,7 @@ router.post('/customer/login_action', async (req, res) => {
         req.session.customerAddress1 = customer.address1;
         req.session.customerAddress2 = customer.address2;
         req.session.customerCountry = customer.country;
+        req.session.customerCity = customer.city;
         req.session.customerState = customer.state;
         req.session.customerPostcode = customer.postcode;
         req.session.customerPhone = customer.phone;
@@ -586,7 +595,7 @@ router.post('/customer/reset/:token', async (req, res) => {
         const mailOpts = {
             to: customer.email,
             subject: 'Password successfully reset',
-            body: 'This is a confirmation that the password for your account ' + customer.email + ' has just been changed successfully.\n'
+            body: `This is a confirmation that the password for your account ${customer.email} has just been changed successfully.\n`
         };
 
         // TODO: Should fix this to properly handle result
@@ -600,6 +609,18 @@ router.post('/customer/reset/:token', async (req, res) => {
         req.session.message_type = 'danger';
         return res.redirect('/forgot');
     }
+});
+
+// logout the customer
+router.post('/customer/check', (req, res) => {
+    if(!req.session.customerPresent){
+        return res.status(400).json({
+            message: 'Not logged in'
+        });
+    }
+    return res.status(200).json({
+        message: 'Customer logged in'
+    });
 });
 
 // logout the customer

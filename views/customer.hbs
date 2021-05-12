@@ -53,6 +53,12 @@
         </div>
         <div class="col-sm-5">
             <div class="form-group">
+            <label class="control-label">{{ @root.__ "City" }} *</label>
+                <input type="text" class="form-control" name="city" id="city" value={{result.city}} required>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="form-group">
             <label class="control-label">{{ @root.__ "State" }} *</label>
                 <input type="text" class="form-control" name="state" id="state" value={{result.state}} required>
             </div>

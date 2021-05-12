@@ -25,6 +25,10 @@
             "type": "string",
             "isNotEmpty": true
         },
+        "city": {
+            "type": "string",
+            "isNotEmpty": true
+        },
         "state": {
             "type": "string",
             "isNotEmpty": true
@@ -49,6 +53,7 @@
         "address1",
         "country",
         "state",
+        "city",
         "postcode",
         "phone",
         "password"

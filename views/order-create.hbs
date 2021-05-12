@@ -75,6 +75,12 @@
                     </div>
                     <div class="col-6">
                         <div class="form-group">
+                            <label class="control-label">{{ @root.__ "City" }} *</label>
+                            <input type="text" class="form-control" name="orderCity" id="orderCity" value="{{session.customerCity}}" placeholder="City" required>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
                             <label class="control-label">{{ @root.__ "State" }} *</label>
                             <input type="text" class="form-control" name="orderState" id="orderState" value="{{session.customerState}}" placeholder="State" required>
                         </div>
@@ -85,7 +91,7 @@
                             <input type="text" class="form-control" name="orderPostcode" id="orderPostcode" value="{{session.customerPostcode}}" placeholder="Postcode" required>
                         </div>
                     </div>
-                    <div class="col-12">
+                    <div class="col-6">
                         <div class="form-group">
                             <label class="control-label">{{ @root.__ "Phone number" }} *</label>
                             <input type="text" class="form-control" name="orderPhone" id="orderPhone" value="{{session.customerPhone}}" placeholder="Phone number" required>

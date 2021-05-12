@@ -1,14 +1,18 @@
 const express = require('express');
 const {
     clearSessionValue,
-    emptyCart,
     getCountryList,
     getId,
     sendEmail,
     getEmailTemplate,
-    clearCustomer,
-    paginateData
+    clearCustomer
 } = require('../lib/common');
+const {
+    paginateData,
+} = require('../lib/paginate');
+const {
+    emptyCart
+} = require('../lib/cart');
 const { restrict, checkAccess } = require('../lib/auth');
 const { indexOrders } = require('../lib/indexing');
 const router = express.Router();
@@ -141,6 +145,7 @@ router.post('/admin/order/create', async (req, res, next) => {
         orderAddr1: req.body.address1 || req.session.customerAddress1,
         orderAddr2: req.body.address2 || req.session.customerAddress2,
         orderCountry: req.body.country || req.session.customerCountry,
+        orderCity: req.body.city || req.session.customerCity,
         orderState: req.body.state || req.session.customerState,
         orderPostcode: req.body.postcode || req.session.customerPostcode,
         orderPhoneNumber: req.body.phone || req.session.customerPhone,

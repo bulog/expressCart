@@ -19,6 +19,7 @@ test('[Success] Create a customer', async t => {
         address1: '1 Sydney Street',
         address2: '',
         country: 'Australia',
+        city: 'NY',
         state: 'NSW',
         postcode: '2000',
         phone: '0400000000',
@@ -43,6 +44,7 @@ test('[Fail] Try create a duplicate customer', async t => {
         address1: '1 Sydney Street',
         address2: '',
         country: 'Australia',
+        city: 'NY',
         state: 'NSW',
         postcode: '2000',
         phone: '0400000000',
@@ -66,6 +68,7 @@ test('[Fail] Create with invalid email address', async t => {
         address1: '1 Sydney Street',
         address2: '',
         country: 'Australia',
+        city: 'NY',
         state: 'NSW',
         postcode: '2000',
         phone: '0400000000',
@@ -90,6 +93,7 @@ test('[Success] Update existing customer from dashboard', async t => {
         address1: '1 Sydney Street',
         address2: '',
         country: 'Australia',
+        city: 'NY',
         state: 'NSW',
         postcode: '2000',
         phone: '0444444444'
@@ -108,6 +112,7 @@ test('[Success] Update existing customer from dashboard', async t => {
     t.deepEqual(res.body.customer.lastName, customer.lastName);
     t.deepEqual(res.body.customer.address1, customer.address1);
     t.deepEqual(res.body.customer.country, customer.country);
+    t.deepEqual(res.body.customer.city, customer.city);
     t.deepEqual(res.body.customer.state, customer.state);
     t.deepEqual(res.body.customer.postcode, customer.postcode);
     t.deepEqual(res.body.customer.phone, customer.phone);
@@ -123,6 +128,7 @@ test('[Success] Update existing customer from customer page', async t => {
         address1: '2 Sydney Street',
         address2: '',
         country: 'Australia',
+        city: 'NY',
         state: 'NSW',
         postcode: '2000',
         phone: '0444444444'
@@ -148,6 +154,7 @@ test('[Success] Update existing customer from customer page', async t => {
     t.deepEqual(res.body.customer.lastName, customer.lastName);
     t.deepEqual(res.body.customer.address1, customer.address1);
     t.deepEqual(res.body.customer.country, customer.country);
+    t.deepEqual(res.body.customer.city, customer.city);
     t.deepEqual(res.body.customer.state, customer.state);
     t.deepEqual(res.body.customer.postcode, customer.postcode);
     t.deepEqual(res.body.customer.phone, customer.phone);
@@ -175,7 +182,7 @@ test('[Success] Filter customers', async t => {
 
 test('[Success] Get single customer', async t => {
     const res = await g.request
-        .get('/admin/customer/view/' + g.customers[0]._id)
+        .get(`/admin/customer/view/${g.customers[0]._id}`)
         .set('apiKey', g.users[0].apiKey)
         .expect(200);
 

@@ -1,4 +1,4 @@
-/* eslint-disable prefer-arrow-callback, no-var, no-tabs */
+/* eslint-disable prefer-arrow-callback, no-var, no-tabs, prefer-template */
 /* globals showNotification, slugify, numeral, moment, feather */
 $(document).ready(function (){
     $.ajaxSetup({
@@ -217,6 +217,8 @@ $(document).ready(function (){
                     productPublished: $('#productPublished').val(),
                     productStock: $('#productStock').val(),
                     productDescription: $('#productDescription').val(),
+                    productGtin: $('#productGtin').val(),
+                    productBrand: $('#productBrand').val(),
                     productPermalink: $('#productPermalink').val(),
                     productSubscription: $('#productSubscription').val(),
                     productComment: $('#productComment').is(':checked'),
@@ -255,6 +257,8 @@ $(document).ready(function (){
                     productStock: $('#productStock').val(),
                     productStockDisable: $('#productStockDisable').is(':checked'),
                     productDescription: $('#productDescription').val(),
+                    productGtin: $('#productGtin').val(),
+                    productBrand: $('#productBrand').val(),
                     productPermalink: $('#productPermalink').val(),
                     productSubscription: $('#productSubscription').val(),
                     productComment: $('#productComment').is(':checked'),
@@ -323,6 +327,22 @@ $(document).ready(function (){
         }
     });
 
+    $('.btn-delete-review').on('click', function(){
+        if(confirm('Are you sure you want to delete this review?')){
+            $.ajax({
+                method: 'POST',
+                url: '/admin/review/delete',
+                data: { reviewId: $(this).attr('data-id') }
+            })
+            .done(function(msg){
+                showNotification(msg.message, 'success', true);
+            })
+            .fail(function(msg){
+                showNotification(msg.responseJSON.message, 'danger');
+            });
+        }
+    });
+
 	// Call to API to check if a permalink is available
     $(document).on('click', '#validatePermalink', function(e){
         if($('#productPermalink').val() !== ''){
@@ -360,10 +380,19 @@ $(document).ready(function (){
         }
     });
 
-    // applies an product filter
+    // applies an customer filter
     $(document).on('click', '#btn_customer_filter', function(e){
         if($('#customer_filter').val() !== ''){
             window.location.href = '/admin/customers/filter/' + $('#customer_filter').val();
+        }else{
+            showNotification('Please enter a keyword to filter', 'danger');
+        }
+    });
+
+    // applies an review filter
+    $(document).on('click', '#btn_review_filter', function(e){
+        if($('#review_filter').val() !== ''){
+            window.location.href = '/admin/reviews/filter/' + $('#review_filter').val();
         }else{
             showNotification('Please enter a keyword to filter', 'danger');
         }
@@ -385,6 +414,7 @@ $(document).ready(function (){
             $('#orderAddress1').val(result.customer.address1);
             $('#orderAddress2').val(result.customer.address2);
             $('#orderCountry').val(result.customer.country);
+            $('#orderCity').val(result.customer.city);
             $('#orderState').val(result.customer.state);
             $('#orderPostcode').val(result.customer.postcode);
             $('#orderPhone').val(result.customer.phone);
@@ -408,6 +438,7 @@ $(document).ready(function (){
                     address1: $('#orderAddress1').val(),
                     address2: $('#orderAddress2').val(),
                     country: $('#orderCountry').val(),
+                    city: $('#orderCity').val(),
                     state: $('#orderState').val(),
                     postcode: $('#orderPostcode').val(),
                     phone: $('#orderPhone').val(),
@@ -473,6 +504,7 @@ $(document).ready(function (){
                     address1: $('#address1').val(),
                     address2: $('#address2').val(),
                     country: $('#country').val(),
+                    city: $('#city').val(),
                     state: $('#state').val(),
                     postcode: $('#postcode').val(),
                     phone: $('#phone').val()

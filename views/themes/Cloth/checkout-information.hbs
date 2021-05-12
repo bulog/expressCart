@@ -40,7 +40,7 @@
                             </div>
                             <div class="form-group">
                                 <button id="customerLogin" class="btn btn-primary float-right"
-                                    type="submit">Login</button>
+                                    type="submit">{{ @root.__ "Sign in" }}</button>
                             </div>
                         </div>
                     </div>
@@ -76,8 +76,8 @@
                             </div>
                             {{/unless}}
                             <div class="col-sm-12">
-                                <a href="/checkout/cart" class="btn btn-primary float-left">Return to cart</a>
-                                <a href="/checkout/shipping" id="checkoutInformation" class="btn btn-primary float-right">Continue to shipping</a>
+                                <a href="/checkout/cart" class="btn btn-primary float-left">{{ @root.__ "Return to cart" }}</a>
+                                <a href="/checkout/shipping" id="checkoutInformation" class="btn btn-primary float-right">{{ @root.__ "Continue to shipping" }}</a>
                             </div>
                         </div>
                     </form>

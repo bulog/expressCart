@@ -15,15 +15,20 @@
     "googleAnalytics": "",
     "injectJs": "",
     "customCss": "",
-    "currencySymbol": "£",
-    "paymentGateway": "stripe",
-    "databaseConnectionString": "mongodb://127.0.0.1:27017/expresscart",
+    "currencySymbol": "$",
+    "currencyISO": "USD",
+    "paymentGateway": [
+        "stripe",
+        "paypal"
+    ],
+    "databaseConnectionString": "mongodb+srv://root:6036@cluster0.i61is.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
     "theme": "Cloth",
     "trackStock": false,
     "orderHook": "",
     "availableLanguages": [
         "en",
-        "it"
+        "it",
+        "cn"
     ],
     "defaultLocale": "en",
     "maxQuantity": 25,
@@ -34,13 +39,19 @@
     "modules": {
         "enabled": {
             "shipping": "shipping-basic",
-            "discount": "discount-voucher"
+            "discount": "discount-voucher",
+            "reviews": "reviews-basic"
         },
         "loaded": {
             "shipping": {},
-            "discount": {}
+            "discount": {},
+            "reviews": {}
         }
     },
     "showRelatedProducts": true,
-    "showHomepageVariants": false
+    "showHomepageVariants": false,
+    "secretCookie": "4460ed8398402f1bb5426b59c7b29b550667b29c",
+    "secretSession": "af5096c9d9320fd3cf4e727c424fa744038d07bf",
+    "themeViews": "../views/themes/Cloth/",
+    "env": ""
 }
