@@ -24,6 +24,13 @@
                     </select>
                 </div>
             </li>
+
+            <li class="list-group-item list-group-input-pad">
+                <strong> Order status: </strong><span class="text-{{getStatusColor result.orderStatus}} float-right">{{@result.trackingNumber}}</span>
+                <div class="float-right col-md-2">
+                    <input class="form-control" id="trackingNumber" value="{{result.trackingNumber}}" />
+                </div>
+            </li>
             <li class="list-group-item"><strong> {{ @root.__ "Order date" }}: </strong><span class="float-right">{{formatDate result.orderDate "DD/MM/YYYY hh:mmA"}}</span></li>
             <li class="list-group-item"><strong> {{ @root.__ "Order ID" }}: </strong><span class="float-right">{{result._id}}</span></li>
             <li class="list-group-item"><strong> {{ @root.__ "Payment Gateway ref" }}: </strong><span class="float-right">{{result.orderPaymentId}}</span></li>

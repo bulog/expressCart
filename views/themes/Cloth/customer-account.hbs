@@ -74,6 +74,9 @@
                                             <li class="list-group-item list-group-input-pad">
                                                 <strong> Order status: </strong><span class="text-{{getStatusColor this.orderStatus}} float-right">{{this.orderStatus}}</span>
                                             </li>
+                                            {{#if this.trackingNumber }}
+                                            <li class="list-group-item"><strong> {{ @root.__ "Tracking Number" }}: </strong><span class="float-right">{{this.trackingNumber}}</span></li>
+                                            {{/if}}
                                             <li class="list-group-item"><strong> {{ @root.__ "Order date" }}: </strong><span class="float-right">{{formatDate result.orderDate "DD/MM/YYYY hh:mmA"}}</span></li>
                                             <li class="list-group-item"><strong> {{ @root.__ "Order ID" }}: </strong><span class="float-right">{{this._id}}</span></li>
                                             {{#if result.orderExpectedBtc }}

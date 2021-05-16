@@ -284,10 +284,14 @@ router.get('/admin/order/delete/:id', restrict, async(req, res) => {
 router.post('/admin/order/statusupdate', restrict, checkAccess, async (req, res) => {
     const db = req.app.db;
     try{
+        let updateobj = {orderStatus: req.body.status};
+        if(req.body.status == 'Shipped') {
+            //add tracking number
+            updateobj.trackingNumber = req.body.trackingNumber;
+        }
         await db.orders.updateOne({
             _id: getId(req.body.order_id) },
-            { $set: { orderStatus: req.body.status }
-        }, { multi: false });
+            { $set: updateobj}, { multi: false });
         return res.status(200).json({ message: 'Status successfully updated' });
     }catch(ex){
         console.info('Error updating status', ex);
