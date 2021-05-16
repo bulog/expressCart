@@ -639,66 +639,79 @@ router.delete('/admin/settings/discount/delete', restrict, checkAccess, async (r
 
 // upload the file
 const upload = multer({ dest: 'public/uploads/' });
-router.post('/admin/file/upload', restrict, checkAccess, upload.single('uploadFile'), async (req, res) => {
+router.post('/admin/file/upload', restrict, checkAccess, upload.array('uploadFile'), async (req, res) => {
     const db = req.app.db;
 
-    if(req.file){
-        const file = req.file;
-
-        // Get the mime type of the file
-        const mimeType = mime.lookup(file.originalname);
-
-        // Check for allowed mime type and file size
-        if(!allowedMimeType.includes(mimeType) || file.size > fileSizeLimit){
-            // Remove temp file
-            fs.unlinkSync(file.path);
-
-            // Return error
-            res.status(400).json({ message: 'File type not allowed or too large. Please try again.' });
-            return;
-        }
-
+    if(req.files && req.files.length > 0){
         // get the product form the DB
         const product = await db.products.findOne({ _id: getId(req.body.productId) });
         if(!product){
             // delete the temp file.
-            fs.unlinkSync(file.path);
+            for(let i in req.files) {
+                fs.unlinkSync(req.files[i].path);
+            }
 
             // Return error
             res.status(400).json({ message: 'File upload error. Please try again.' });
             return;
         }
-
         const productPath = product._id.toString();
         const uploadDir = path.join('public/uploads', productPath);
 
         // Check directory and create (if needed)
         checkDirectorySync(uploadDir);
+        let erroruploadedfiles = [];
 
-        // Setup the new path
-        const imagePath = path.join('/uploads', productPath, file.originalname.replace(/ /g, '_'));
+        for(let i in req.files) {
+            const file = req.files[i];
 
-        // save the new file
-        const dest = fs.createWriteStream(path.join(uploadDir, file.originalname.replace(/ /g, '_')));
-        const pipeline = util.promisify(stream.pipeline);
-
-        try{
-            await pipeline(
-                fs.createReadStream(file.path),
-                dest
-            );
-
-            // delete the temp file.
-            fs.unlinkSync(file.path);
-
-            // if there isn't a product featured image, set this one
-            if(!product.productImage){
-                await db.products.updateOne({ _id: getId(req.body.productId) }, { $set: { productImage: imagePath } }, { multi: false });
+            // Get the mime type of the file
+            const mimeType = mime.lookup(file.originalname);
+    
+            // Check for allowed mime type and file size
+            if(!allowedMimeType.includes(mimeType) || file.size > fileSizeLimit){
+                // Remove temp file
+                fs.unlinkSync(file.path);
+                erroruploadedfiles.push(`${file.originalname} File type not allowed or too large. Please try again.`);
+                // Return error
+                //res.status(400).json({ message: 'File type not allowed or too large. Please try again.' });
+                //return;
             }
-            res.status(200).json({ message: 'File uploaded successfully' });
-        }catch(ex){
-            console.log('Failed to upload the file', ex);
-            res.status(400).json({ message: 'File upload error. Please try again.' });
+            else {
+                // Setup the new path
+                const imagePath = path.join('/uploads', productPath, file.originalname.replace(/ /g, '_'));
+        
+                // save the new file
+                const dest = fs.createWriteStream(path.join(uploadDir, file.originalname.replace(/ /g, '_')));
+                const pipeline = util.promisify(stream.pipeline);
+        
+                try{
+                    await pipeline(
+                        fs.createReadStream(file.path),
+                        dest
+                    );
+        
+                    // delete the temp file.
+                    fs.unlinkSync(file.path);
+        
+                    // if there isn't a product featured image, set this one
+                    if(!product.productImage){
+                        await db.products.updateOne({ _id: getId(req.body.productId) }, { $set: { productImage: imagePath } }, { multi: false });
+                    }
+                    //res.status(200).json({ message: 'File uploaded successfully' });
+                }catch(ex){
+                    console.log('Failed to upload the file', ex);
+                    erroruploadedfiles.push(`${file.originalname} File upload error. Please try again.`);
+                    //res.status(400).json({ message: 'File upload error. Please try again.' });
+                }
+            }
+        }
+        if(erroruploadedfiles.length == 0) {
+            res.status(200).json({ message: 'Files uploaded successfully' });
+        }
+        else {
+            res.status(400).json({ message: `File upload error. Please try again.${erroruploadedfiles.join(', ')}` });
+            erroruploadedfiles.length = 0;
         }
     }else{
         // Return error
