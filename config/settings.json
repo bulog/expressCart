@@ -21,7 +21,7 @@
         "stripe",
         "paypal"
     ],
-    "databaseConnectionString": "mongodb+srv://root:6036@cluster0.i61is.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "databaseConnectionString": "mongodb://localhost:27017/expresscart",
     "theme": "Cloth",
     "trackStock": false,
     "orderHook": "",
