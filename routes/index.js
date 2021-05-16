@@ -402,7 +402,7 @@ router.get('/product/:id', async (req, res) => {
     const config = req.app.config;
     const productsIndex = req.app.productsIndex;
 
-    const product = await db.products.findOne({ $or: [{ _id: getId(req.params.id) }, { productPermalink: req.params.id }] });
+    const product = await db.products.findOne({ $or: [{ _id: req.params.id }, { productPermalink: req.params.id }] });
     if(!product){
         res.render('error', { title: 'Not found', message: 'Product not found', helpers: req.handlebars.helpers, config });
         return;
