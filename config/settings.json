@@ -28,7 +28,8 @@
     "availableLanguages": [
         "en",
         "it",
-        "cn"
+        "cn",
+        "zh"
     ],
     "defaultLocale": "en",
     "maxQuantity": 25,
