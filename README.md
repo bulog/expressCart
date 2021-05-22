@@ -6,4 +6,5 @@
 ## changes
 1. add city to address
 2. fix paypal amount error
-3. add Chinese language
+3. add Simplified Chinese language
+4. add Traditional Chinese
