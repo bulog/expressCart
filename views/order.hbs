@@ -68,7 +68,8 @@
             <li class="list-group-item"><strong class="text-info">{{ @root.__ "Products ordered" }}</strong></li>
             {{#each result.orderProducts}}
                 <li class="list-group-item">
-                    {{this.quantity}} x {{this.title}}
+                    <img class="img-fluid" style="width:150px;height:auto" src="{{this.productImage}}" alt="{{this.title}} product image">
+                    {{this.quantity}} x <a href="/product/{{this.link}}">{{this.title}}</a>
                     {{#if this.variantId}}
                         &nbsp; > &nbsp;
                         <span class="text-warning"> {{ @root.__ "Options" }}: </span>
