@@ -623,6 +623,7 @@ router.post('/product/updatecart', async (req, res, next) => {
 
     // Update the cart
     req.session.cart[cartItem.cartId].quantity = productQuantity;
+    req.session.cart[cartItem.cartId].productPrice = productPrice;
     req.session.cart[cartItem.cartId].totalItemPrice = productPrice * productQuantity;
 
     // update total cart amount
@@ -783,6 +784,7 @@ router.post('/product/addtocart', async (req, res, next) => {
     if(req.session.cart[productCartId]){
         cartQuantity = parseInt(req.session.cart[productCartId].quantity) + productQuantity;
         req.session.cart[productCartId].quantity = cartQuantity;
+        req.session.cart[productCartId].productPrice = productPrice;
         req.session.cart[productCartId].totalItemPrice = productPrice * parseInt(req.session.cart[productCartId].quantity);
     }else{
         // Set the card quantity
@@ -793,6 +795,7 @@ router.post('/product/addtocart', async (req, res, next) => {
         productObj.productId = product._id;
         productObj.title = product.productTitle;
         productObj.quantity = productQuantity;
+        productObj.productPrice = productPrice;
         productObj.totalItemPrice = productPrice * productQuantity;
         productObj.productImage = product.productImage;
         productObj.productComment = productComment;
