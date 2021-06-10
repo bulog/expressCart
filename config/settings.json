@@ -53,6 +53,7 @@
     "showHomepageVariants": false,
     "secretCookie": "4460ed8398402f1bb5426b59c7b29b550667b29c",
     "secretSession": "af5096c9d9320fd3cf4e727c424fa744038d07bf",
+    "cookieSecret": false,
     "themeViews": "../views/themes/Cloth/",
     "env": ""
 }

@@ -126,6 +126,10 @@
         "orderHook": {
             "format": "uri-template"
         },
+        "cookieSecret": {
+            "type": "boolean",
+            "default": false
+        },
         "secretCookie": {
             "type": "string"
         },

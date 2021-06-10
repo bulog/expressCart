@@ -358,6 +358,7 @@ app.use(session({
     cookie: {
         path: '/',
         httpOnly: true,
+        secure: config.cookieSecret == true,
         maxAge: 900000
     },
     store: store

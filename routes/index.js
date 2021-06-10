@@ -1031,7 +1031,11 @@ router.get('/category/:cat/:pageNum?', (req, res) => {
 
 // Language setup in cookie
 router.get('/lang/:locale', (req, res) => {
-    res.cookie('locale', req.params.locale, { maxAge: 900000, httpOnly: true });
+    res.cookie('locale', req.params.locale, {
+        maxAge: 900000,
+        secure: req.app.config.cookieSecret == true,
+        httpOnly: true 
+    });
     res.redirect('back');
 });
 
